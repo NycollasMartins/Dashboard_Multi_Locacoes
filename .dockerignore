@@ -1,0 +1,14 @@
+# Mantém o contexto de build enxuto e evita vazar segredos/artefatos.
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Dockerfile
+.dockerignore
+DEPLOY.md
+README.md
