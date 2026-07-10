@@ -34,6 +34,14 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       const currentUser = await base44.auth.me();
+      // Usuário arquivado perde o acesso imediatamente.
+      if (currentUser.archived) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setIsAuthenticated(false);
+        setAuthError('archived');
+        return;
+      }
       setUser(currentUser);
       setIsAuthenticated(true);
       setAuthError(null);

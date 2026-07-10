@@ -31,6 +31,12 @@ create table if not exists public.profiles (
   updated_at  timestamptz not null default now()
 );
 
+-- Arquivamento de usuário: mantém o cadastro, mas bloqueia o acesso.
+alter table public.profiles
+  add column if not exists archived     boolean not null default false,
+  add column if not exists archived_at  timestamptz,
+  add column if not exists confirmed_at timestamptz;  -- quando o convite foi aceito
+
 drop trigger if exists trg_profiles_updated on public.profiles;
 create trigger trg_profiles_updated before update on public.profiles
   for each row execute function public.set_updated_at();
@@ -50,12 +56,13 @@ begin
     v_role := coalesce(new.raw_user_meta_data->>'role', 'user');
   end if;
 
-  insert into public.profiles (id, email, full_name, role)
+  insert into public.profiles (id, email, full_name, role, confirmed_at)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
-    v_role
+    v_role,
+    new.email_confirmed_at   -- já vem preenchido se o usuário foi criado confirmado
   )
   on conflict (id) do nothing;
   return new;
@@ -66,6 +73,32 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- Marca o perfil como confirmado quando a pessoa aceita o convite / confirma o e-mail.
+create or replace function public.handle_user_confirmed()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  update public.profiles
+     set confirmed_at = new.email_confirmed_at
+   where id = new.id;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_confirmed on auth.users;
+create trigger on_auth_user_confirmed
+  after update of email_confirmed_at on auth.users
+  for each row
+  when (old.email_confirmed_at is null and new.email_confirmed_at is not null)
+  execute function public.handle_user_confirmed();
+
+-- Backfill: marca como confirmados os usuários que já existiam antes desta coluna.
+update public.profiles p
+   set confirmed_at = u.email_confirmed_at
+  from auth.users u
+ where u.id = p.id
+   and p.confirmed_at is null
+   and u.email_confirmed_at is not null;
 
 -- Helper: o usuário atual é admin? (SECURITY DEFINER evita recursão de RLS)
 create or replace function public.is_admin()

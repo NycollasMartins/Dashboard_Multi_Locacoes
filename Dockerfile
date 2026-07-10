@@ -12,9 +12,10 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # As variáveis do Supabase são "assadas" no build (Vite embute VITE_* no bundle).
-# Passe-as no build:  docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_ANON_KEY=... .
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
+# Os valores abaixo são o PADRÃO (a chave anon é pública, seguro versionar).
+# O EasyPanel pode sobrescrever passando-as como build args, se quiser.
+ARG VITE_SUPABASE_URL=https://cttzssotzlwnjckaspzt.supabase.co
+ARG VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dHpzc290emx3bmpja2FzcHp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MjQ1OTgsImV4cCI6MjA5OTAwMDU5OH0.80-yNzb2CMIFUOd5uiHmCPr-Qx1T02KO8KJpBZ7j4Zs
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 

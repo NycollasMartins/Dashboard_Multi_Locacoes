@@ -175,6 +175,7 @@ async function getMergedUser() {
     phone: profile.phone || '',
     company: profile.company || '',
     role: profile.role || 'user',
+    archived: profile.archived || false,
   };
 }
 
@@ -216,6 +217,32 @@ const users = {
     const { data, error } = await supabase.functions.invoke('invite-user', {
       body: { email, role, full_name: fullName },
     });
+    if (error) throw error;
+    return data;
+  },
+
+  // Exclui o usuário de forma permanente (via Edge Function segura).
+  async deleteUser(userId) {
+    const { data, error } = await supabase.functions.invoke('admin-user', {
+      body: { action: 'delete', user_id: userId },
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  // Arquiva/desarquiva: mantém o registro, apenas marca o perfil.
+  // O acesso ao app é bloqueado no AuthContext (usuário arquivado é deslogado).
+  // Feito direto na tabela (RLS de admin) por ser mais confiável que a API de ban.
+  async setArchived(userId, archived) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({
+        archived,
+        archived_at: archived ? new Date().toISOString() : null,
+      })
+      .eq('id', userId)
+      .select()
+      .single();
     if (error) throw error;
     return data;
   },
