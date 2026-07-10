@@ -19,6 +19,7 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("user");
   const [inviting, setInviting] = useState(false);
@@ -31,9 +32,9 @@ export default function AdminUsers() {
 
   const invite = async () => {
     setInviting(true);
-    await base44.users.inviteUser(inviteEmail, inviteRole);
+    await base44.users.inviteUser(inviteEmail, inviteRole, inviteName);
     toast.success(`Convite enviado para ${inviteEmail}`);
-    setInviting(false); setInviteOpen(false); setInviteEmail(""); setInviteRole("user");
+    setInviting(false); setInviteOpen(false); setInviteName(""); setInviteEmail(""); setInviteRole("user");
     base44.entities.User.list().then(setUsers);
   };
 
@@ -94,6 +95,7 @@ export default function AdminUsers() {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Convidar Usuário</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
+            <div><Label>Nome completo</Label><Input value={inviteName} onChange={e => setInviteName(e.target.value)} placeholder="João da Silva" /></div>
             <div><Label>E-mail</Label><Input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="email@exemplo.com" /></div>
             <div><Label>Função</Label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
@@ -104,7 +106,7 @@ export default function AdminUsers() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteOpen(false)}>Cancelar</Button>
-            <Button onClick={invite} disabled={inviting || !inviteEmail}>{inviting ? "Enviando..." : "Enviar Convite"}</Button>
+            <Button onClick={invite} disabled={inviting || !inviteName || !inviteEmail}>{inviting ? "Enviando..." : "Enviar Convite"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

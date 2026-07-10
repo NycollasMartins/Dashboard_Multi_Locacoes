@@ -212,9 +212,9 @@ const auth = {
 // Convite de usuários (via Edge Function segura)
 // ---------------------------------------------------------------------------
 const users = {
-  async inviteUser(email, role = 'user') {
+  async inviteUser(email, role = 'user', fullName = '') {
     const { data, error } = await supabase.functions.invoke('invite-user', {
-      body: { email, role },
+      body: { email, role, full_name: fullName },
     });
     if (error) throw error;
     return data;

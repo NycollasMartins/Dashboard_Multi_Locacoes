@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email, role = "user" } = await req.json();
+    const { email, role = "user", full_name = "" } = await req.json();
     if (!email) {
       return json({ error: "E-mail é obrigatório." }, 400);
     }
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const redirectTo = `${new URL(req.url).origin}`;
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-      data: { role },
+      data: { role, full_name },
     });
     if (error) return json({ error: error.message }, 400);
 
