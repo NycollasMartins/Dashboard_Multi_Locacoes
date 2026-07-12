@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useRealtime } from "@/hooks/useRealtime";
 import DataTable from "@/components/DataTable";
 import ClientDialog from "@/components/ClientDialog";
 
@@ -11,6 +12,7 @@ export default function Clients() {
 
   const load = () => base44.entities.Client.list("-created_date").then(d => { setItems(d); setLoading(false); });
   useEffect(() => { load(); }, []);
+  useRealtime("clients", load);
 
   const columns = [
     { key: "name", label: "Nome", accessor: "name" },

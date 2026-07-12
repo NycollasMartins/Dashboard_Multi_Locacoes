@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { useRealtime } from "@/hooks/useRealtime";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,9 @@ export default function Financeiro() {
   const { data: quotes = [] } = useQuery({ queryKey: ["quotes"], queryFn: () => base44.entities.Quote.list() });
   const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: () => base44.entities.Client.list() });
   const { data: equipment = [] } = useQuery({ queryKey: ["equipment"], queryFn: () => base44.entities.Equipment.list() });
+
+  // Tempo real: qualquer mudança nessas tabelas atualiza a tela na hora.
+  useRealtime(["rentals", "expenses", "accounts_payable", "quotes", "clients", "equipment"], () => qc.invalidateQueries());
 
   // Cash flow calculations
   const paidRentals = rentals.filter(r => r.payment_status === "Pago" && !r.is_bonus);

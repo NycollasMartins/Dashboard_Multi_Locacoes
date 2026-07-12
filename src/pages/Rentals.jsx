@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useRealtime } from "@/hooks/useRealtime";
 import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import RentalDialog from "@/components/RentalDialog";
@@ -19,6 +20,7 @@ export default function Rentals() {
     base44.entities.Equipment.list(),
   ]).then(([r, c, e]) => { setItems(r); setClients(c); setEquipment(e); setLoading(false); });
   useEffect(() => { load(); }, []);
+  useRealtime(["rentals", "clients", "equipment"], load);
 
   const fmt = v => v ? `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—";
 

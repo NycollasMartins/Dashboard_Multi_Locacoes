@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useRealtime } from "@/hooks/useRealtime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,10 +28,13 @@ export default function AdminUsers() {
   const [currentUser, setCurrentUser] = useState(null);
   const [tab, setTab] = useState("ativos");
 
+  const reload = () => base44.entities.User.list().then(setUsers).catch(() => {});
+
   useEffect(() => {
     base44.auth.me().then(setCurrentUser);
     base44.entities.User.list().then(u => { setUsers(u); setLoading(false); }).catch(() => setLoading(false));
   }, []);
+  useRealtime("profiles", reload);
 
   const invite = async () => {
     setInviting(true);

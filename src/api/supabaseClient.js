@@ -221,13 +221,12 @@ const users = {
     return data;
   },
 
-  // Exclui o usuário de forma permanente (via Edge Function segura).
+  // Exclui o usuário de forma permanente via função no banco (RPC).
+  // Mais confiável que a API admin do GoTrue (que falha nesse projeto).
   async deleteUser(userId) {
-    const { data, error } = await supabase.functions.invoke('admin-user', {
-      body: { action: 'delete', user_id: userId },
-    });
+    const { error } = await supabase.rpc('delete_user', { uid: userId });
     if (error) throw error;
-    return data;
+    return { success: true };
   },
 
   // Arquiva/desarquiva: mantém o registro, apenas marca o perfil.

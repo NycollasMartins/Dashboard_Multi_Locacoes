@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { useRealtime } from "@/hooks/useRealtime";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Users, FileText, DollarSign, TrendingUp, CalendarDays, AlertCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -31,17 +32,17 @@ export default function Dashboard() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([
-      base44.entities.Equipment.list(),
-      base44.entities.Client.list(),
-      base44.entities.Rental.list(),
-      base44.entities.Invoice.list(),
-    ]).then(([e, c, r, i]) => {
-      setEquipment(e); setClients(c); setRentals(r); setInvoices(i);
-      setLoading(false);
-    });
-  }, []);
+  const load = () => Promise.all([
+    base44.entities.Equipment.list(),
+    base44.entities.Client.list(),
+    base44.entities.Rental.list(),
+    base44.entities.Invoice.list(),
+  ]).then(([e, c, r, i]) => {
+    setEquipment(e); setClients(c); setRentals(r); setInvoices(i);
+    setLoading(false);
+  });
+  useEffect(() => { load(); }, []);
+  useRealtime(["equipment", "clients", "rentals", "invoices"], load);
 
   if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" /></div>;
 
